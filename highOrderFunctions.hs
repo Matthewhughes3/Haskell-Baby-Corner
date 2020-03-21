@@ -22,3 +22,17 @@ quicksort' (head:tail) =
 largestDivisible :: (Integral a) => a -> a
 largestDivisible n = head (filter' divisible [100000,99999..])
     where divisible x = x `mod` n == 0
+
+takeWhile' :: (Eq a) => (a -> Bool) -> [a] -> [a]
+takeWhile' f (head:tail)
+    | f head = head:takeWhile' f tail
+    | otherwise = []
+
+findIndex' :: (Eq a) => (a -> Bool) -> [a] -> Int
+findIndex' f (head:tail)
+    | f head = 0
+    | otherwise = 1 + findIndex' f tail
+
+bigSum :: (Integral a) => a
+bigSum = sum (takeWhile' (<10000) [x^2 | x <- oddNumbers])
+    where oddNumbers = [1,3..]
