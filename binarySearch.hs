@@ -1,4 +1,10 @@
+import qualified Data.List as List
+
 data Tree a = EmptyTree | Node a (Tree a) (Tree a) deriving (Show, Read, Eq)
+
+instance Functor Tree where
+  fmap f EmptyTree = EmptyTree
+  fmap f (Node x left right) = Node (f x) (fmap f left) (fmap f right)
 
 --TODO: Figure out how to get Tree to show like a list
 --instance Show (Tree a) where
@@ -24,8 +30,19 @@ treeElem x (Node head left right)
   | x < head = treeElem x left
   | x > head = treeElem x right
 
+-- Virgin implementation
+--listToTree :: (Ord a) => [a] -> Tree a
+--listToTree = foldl (flip treeInsert) EmptyTree
+
+-- Chad implementation
+bisectList :: (Ord a) => [a] -> ([a], [a])
+bisectList x = List.splitAt (length x `div` 2) x
+
 listToTree :: (Ord a) => [a] -> Tree a
-listToTree = foldl (flip treeInsert) EmptyTree
+listToTree [] = EmptyTree
+listToTree x = let (left, (middle:right)) = bisectList $ List.sort x
+  in (Node middle (listToTree left) (listToTree right))
+-- End Chad implementation
 
 treeToList :: (Ord a) => Tree a -> [a]
 treeToList EmptyTree = []
