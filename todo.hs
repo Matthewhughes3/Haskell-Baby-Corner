@@ -1,26 +1,37 @@
--- WIP
-import System.IO
 import System.Environment
-import Control.Monad
+import System.Directory
+import System.IO
+import Data.List
 
-main = do
-    args <- getArgs
-    contents <- readFile (args !! 0)
-    putStr (readTodos contents)
-    putStrLn "What would you like to do?" 
-    putStrLn "(a item) - add item"
-    putStrLn "(d number) - delete item"
-    putStrLn "Press Enter to exit"
-    command <- getLine
-    when (not $ null command) $ handleCommand
+dispatch :: [(String, [String] -> IO ())]
+dispatch = [
+    ("add", add),
+    ("view", view),
+    ("remove", remove)]
 
---handleCommand :: String -> IO String
-handleCommand command = do 
-    let commandArgs = words command
-    if length commandArgs /= 2 || length (commandArgs !! 0) > 1
-        then putStrLn "Bad Command"
-        else putStrLn "Good" 
-    handleCommand command
+main = do 
+    (command:args) <- getArgs
+    let (Just action) = lookup command dispatch
+    action args
 
-readTodos :: String -> String
-readTodos todos = unlines $ zipWith (\line n -> show n ++ " - " ++ line) (lines todos) [1..]
+add :: [String] -> IO ()
+add [fileName, todoItem] = appendFile fileName (todoItem ++ "\n")
+
+view :: [String] -> IO ()
+view [fileName] = do 
+    contents <- readFile fileName
+    putStr $ unlines $ zipWith (\line n -> show n ++ " - " ++ line) (lines contents) [1..]
+
+remove :: [String] -> IO ()  
+remove [fileName, numberString] = do  
+    handle <- openFile fileName ReadMode  
+    (tempName, tempHandle) <- openTempFile "." "temp"  
+    contents <- hGetContents handle  
+    let number = read numberString  
+        todoTasks = lines contents  
+        newTodoItems = delete (todoTasks !! (number - 1)) todoTasks  
+    hPutStr tempHandle $ unlines newTodoItems  
+    hClose handle  
+    hClose tempHandle  
+    removeFile fileName  
+    renameFile tempName fileName 
