@@ -7,15 +7,33 @@ dispatch :: [(String, [String] -> IO ())]
 dispatch = [
     ("add", add),
     ("view", view),
+    ("bump", bump),
     ("remove", remove)]
 
 main = do 
     (command:args) <- getArgs
-    let (Just action) = lookup command dispatch
-    action args
+    case lookup command dispatch of
+        Nothing -> putStrLn "Invalid Command"
+        (Just action) -> action args
 
 add :: [String] -> IO ()
 add [fileName, todoItem] = appendFile fileName (todoItem ++ "\n")
+
+--TODO: figure out a good way to share functionality between this and remove
+bump :: [String] -> IO()
+bump [fileName, numberString] = do
+    handle <- openFile fileName ReadMode  
+    (tempName, tempHandle) <- openTempFile "." "temp"  
+    contents <- hGetContents handle  
+    let number = read numberString  
+        todoTasks = lines contents  
+        moveTask = todoTasks !! (number - 1)
+        newTodoItems = moveTask:delete moveTask todoTasks  
+    hPutStr tempHandle $ unlines newTodoItems  
+    hClose handle  
+    hClose tempHandle  
+    removeFile fileName  
+    renameFile tempName fileName 
 
 view :: [String] -> IO ()
 view [fileName] = do 
