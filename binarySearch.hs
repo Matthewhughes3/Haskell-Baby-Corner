@@ -19,6 +19,12 @@ instance F.Foldable Tree where
   foldMap f EmptyTree = mempty
   foldMap f (Node x left right) = F.foldMap f left `mappend` f x `mappend` F.foldMap f right
 
+--TODO: Figure out how to implement >>= so if affects all nodes of the tree
+instance Monad Tree where
+  return x = (Node x EmptyTree EmptyTree)
+  EmptyTree >>= f = EmptyTree
+  (Node x l r) >>= f = f x
+
 --TODO: Figure out how to get Tree to show like a list
 --instance Show (Tree a) where
 --	show EmptyTree = "[]"
