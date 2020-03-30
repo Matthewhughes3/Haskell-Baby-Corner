@@ -1,4 +1,5 @@
 -- Chad implementation
+import Control.Applicative
 data Vector = Vector Float Float
 
 instance Num Vector where
