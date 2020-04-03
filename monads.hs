@@ -29,5 +29,17 @@ moveKnight (c,r) = do
 in3 :: KnightPos -> [KnightPos]
 in3 start = return start >>= moveKnight >>= moveKnight >>= moveKnight
 
+inMany :: Int -> KnightPos -> [KnightPos]
+inMany x start = return start >>= foldr (<=<) return (replicate x moveKnight)
+
+canReachIn :: Int -> KnightPos -> KnightPos -> Bool
+canReachIn x start end = end `elem` inMany x start
+
 canReachIn3 :: KnightPos -> KnightPos -> Bool
 canReachIn3 start end = end `elem` in3 start
+
+addStuff :: Int -> Int
+addStuff = do
+  a <- (*2)
+  b <- (+2)
+  return (a+b)
